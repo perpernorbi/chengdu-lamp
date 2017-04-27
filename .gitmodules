@@ -1,3 +1,6 @@
 [submodule "libesphttpd"]
 	path = libesphttpd
 	url = http://git.spritesserver.nl/libesphttpd.git/
+[submodule "esphttpd-wifi-module"]
+	path = esphttpd-wifi-module
+	url = git@github.com:perpernorbi/esphttpd-wifi-module.git
