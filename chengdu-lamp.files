@@ -46,3 +46,13 @@ libesphttpd/util/cgiflash.c
 libesphttpd/util/cgiwebsocket.c
 libesphttpd/util/cgiwifi.c
 user/user_main.c
+user/wifi-config-module/src/wifi-config-module.c
+user/wifi-config-module/src/wifi-config-module.h
+user/wifi-config-module/src/json.c
+user/wifi-config-module/src/json.h
+user/stdout.c
+user/stdout.h
+Makefile
+Makefile.combined
+Makefile.ota
+Makefile.separate

@@ -51,7 +51,7 @@ APPGEN		?= $(SDK_BASE)/tools/gen_appbin.py
 TARGET		= httpd
 
 # which modules (subdirectories) of the project to include in compiling
-MODULES		= user
+MODULES		= user user/wifi-config-module/src user/jwrite
 EXTRA_INCDIR	= include libesphttpd/include
 
 # libraries used in this project, mainly provided by the SDK
@@ -189,6 +189,10 @@ libesphttpd/Makefile:
 	$(Q) git submodule update
 
 libesphttpd: libesphttpd/Makefile
+	rm -rf html/*
+	cp -r user/html/* html/
+	mkdir html/wifi
+	cp -r user/wifi-config-module/html/* html/wifi
 	$(Q) make -C libesphttpd USE_OPENSDK=$(USE_OPENSDK)
 
 $(APP_AR): libesphttpd $(OBJ)
