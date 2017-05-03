@@ -55,47 +55,69 @@ handled top-down, so make sure to put more specific rules above the more
 general ones. Authorization things (like authBasic) act as a 'barrier' and
 should be placed above the URLs they protect.
 */
-HttpdBuiltInUrl builtInUrlsListBegin[] = {
+const HttpdBuiltInUrl urlsListBegin[] = {
     {"*", cgiRedirectApClientToHostname, "esp8266.nonet"},
-    {"/kuku", cgiRedirect, "/index.html"},
+    {"/", cgiRedirect, "/index.html"},
 #ifdef INCLUDE_FLASH_FNS
     {"/flash/next", cgiGetFirmwareNext, &uploadParams},
     {"/flash/upload", cgiUploadFirmware, &uploadParams},
 #endif
-    {"/flash/reboot", cgiRebootFirmware, NULL}
+    {"/flash/reboot", cgiRebootFirmware, NULL},
+    {NULL, NULL, NULL}
 };
-const size_t builtInUrlsListBeginSize = sizeof(builtInUrlsListBegin) / sizeof(builtInUrlsListBegin[0]);
 
-HttpdBuiltInUrl builtInUrlsListEnd[] = {
+const HttpdBuiltInUrl urlsListEnd[] = {
     {"*", cgiEspFsHook, NULL}, //Catch-all cgi function for the filesystem
     {NULL, NULL, NULL}
 };
-const size_t builtInUrlsListEndSize =
-        sizeof(builtInUrlsListEnd) / sizeof(builtInUrlsListEnd[0]);
+
+const HttpdBuiltInUrl *allUrlLists[] = {
+    urlsListBegin,
+    wifi_module_builtInUrls,
+    urlsListEnd,
+    NULL
+};
 
 HttpdBuiltInUrl *allUrls;
 
+size_t httpdBuiltInUrlLength(const HttpdBuiltInUrl* array)
+{
+    size_t retval;
+    for (retval = 0; array->url != NULL; ++array) ++retval;
+    return retval;
+}
+
 void concatenateBuiltInUrls()
 {
-    size_t requiredSize = 0;
-    requiredSize += builtInUrlsListBeginSize;
-    requiredSize += wifi_module_builtInUrlsSize;
-    requiredSize += builtInUrlsListEndSize;
-    os_printf("requiredSize = %d\n\r", requiredSize);
+    const HttpdBuiltInUrl **i;
+    size_t builtInUrlsCount = 1;
+    for (i = allUrlLists; (*i) != NULL; ++i) {
+        size_t itemSize = httpdBuiltInUrlLength(*i);
+        os_printf("i = %p, *i = %p, itemsSize = %d\n", i, *i, itemSize);
+        builtInUrlsCount += itemSize;
+    }
+    os_printf("builtInUrlsCount = %d\n", builtInUrlsCount);
 
-    allUrls = (HttpdBuiltInUrl*) malloc(requiredSize * sizeof(builtInUrlsListBegin[0]));
-    HttpdBuiltInUrl *u = allUrls;
-    memcpy(u, builtInUrlsListBegin, builtInUrlsListBeginSize * sizeof(builtInUrlsListBegin[0]));
-    u += builtInUrlsListBeginSize;
-    memcpy(u, wifi_module_builtInUrls,
-           wifi_module_builtInUrlsSize * sizeof(wifi_module_builtInUrls[0]));
-    u += wifi_module_builtInUrlsSize;
-    memcpy(u, builtInUrlsListEnd,
-           builtInUrlsListEndSize * sizeof(builtInUrlsListEnd[0]));
+    allUrls = (HttpdBuiltInUrl*)malloc(builtInUrlsCount*sizeof(HttpdBuiltInUrl));
+    HttpdBuiltInUrl *allUrlsI = allUrls;
+    for (i = allUrlLists; (*i) != NULL; ++i) {
+        const HttpdBuiltInUrl *j;
+        for (j = *i; j->url != NULL; ++j, ++allUrlsI)
+            memcpy(allUrlsI, j, sizeof(HttpdBuiltInUrl));
+    }
+    allUrlsI->url = NULL;
+    allUrlsI->cgiArg = NULL;
+    allUrlsI->cgiCb = NULL;
+}
 
-    size_t i;
-    for (i = 0; i < requiredSize; ++i)
-        os_printf("%d: %s %p %p\n\r", i, allUrls[i].url, (void*)allUrls[i].cgiCb, (const char*)allUrls[i].cgiArg);
+void dumpHttpdBuiltInUrls(const HttpdBuiltInUrl* array)
+{
+    size_t i = 0;
+    for (i = 0; array->url != NULL; ++array, ++i)
+        os_printf("%d: %s %p %p\n\r", i, allUrls[i].url,
+                  (void*)allUrls[i].cgiCb, (const char*)allUrls[i].cgiArg);
+    os_printf("%d: %s %p %p\n\r", i, allUrls[i].url,
+              (void*)allUrls[i].cgiCb, (const char*)allUrls[i].cgiArg);
 }
 
 //Main routine. Initialize stdout, the I/O, filesystem and the webserver and we're done.
@@ -111,7 +133,8 @@ void user_init(void) {
     espFsInit((void*)(webpages_espfs_start));
 #endif
     concatenateBuiltInUrls();
-
+    dumpHttpdBuiltInUrls(allUrls);
+    os_printf("Starting httpd\n");
     httpdInit(allUrls, 80);
     os_printf("READY\n\r");
 }
