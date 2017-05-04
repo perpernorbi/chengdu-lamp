@@ -87,7 +87,7 @@ size_t httpdBuiltInUrlLength(const HttpdBuiltInUrl* array)
     return retval;
 }
 
-void concatenateBuiltInUrls()
+size_t getBuiltInUrlsRequiredSize()
 {
     const HttpdBuiltInUrl **i;
     size_t builtInUrlsCount = 1;
@@ -96,10 +96,13 @@ void concatenateBuiltInUrls()
         os_printf("i = %p, *i = %p, itemsSize = %d\n", i, *i, itemSize);
         builtInUrlsCount += itemSize;
     }
-    os_printf("builtInUrlsCount = %d\n", builtInUrlsCount);
+    return builtInUrlsCount;
+}
 
-    allUrls = (HttpdBuiltInUrl*)malloc(builtInUrlsCount*sizeof(HttpdBuiltInUrl));
+void copyBuiltInUrls()
+{
     HttpdBuiltInUrl *allUrlsI = allUrls;
+    const HttpdBuiltInUrl **i;
     for (i = allUrlLists; (*i) != NULL; ++i) {
         const HttpdBuiltInUrl *j;
         for (j = *i; j->url != NULL; ++j, ++allUrlsI)
@@ -108,6 +111,14 @@ void concatenateBuiltInUrls()
     allUrlsI->url = NULL;
     allUrlsI->cgiArg = NULL;
     allUrlsI->cgiCb = NULL;
+}
+
+void concatenateBuiltInUrls()
+{
+    size_t builtInUrlsCount = getBuiltInUrlsRequiredSize();
+    os_printf("builtInUrlsCount = %d\n", builtInUrlsCount);
+    allUrls = (HttpdBuiltInUrl*)malloc(builtInUrlsCount*sizeof(HttpdBuiltInUrl));
+    copyBuiltInUrls();
 }
 
 void dumpHttpdBuiltInUrls(const HttpdBuiltInUrl* array)
