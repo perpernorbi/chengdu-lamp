@@ -51,7 +51,7 @@ APPGEN		?= $(SDK_BASE)/tools/gen_appbin.py
 TARGET		= httpd
 
 # which modules (subdirectories) of the project to include in compiling
-MODULES		= user user/wifi-config-module/src user/jwrite
+MODULES		= user user/wifi-config-module
 EXTRA_INCDIR	= include libesphttpd/include
 
 # libraries used in this project, mainly provided by the SDK
@@ -86,8 +86,8 @@ EXTRA_LD_SCRIPTS:=
 ####
 #### no user configurable options below here
 ####
-SRC_DIR		:= $(MODULES)
-BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(MODULES))
+SRC_DIR		:= $(addsuffix /src,$(MODULES))
+BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(addsuffix /src,$(MODULES)))
 
 SDK_LIBDIR	:= $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
 SDK_INCDIR	:= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))

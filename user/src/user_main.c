@@ -21,7 +21,7 @@
 #include "webpages-espfs.h"
 #include "cgiwebsocket.h"
 #include "stdout.h"
-#include "wifi-config-module/src/wifi-config-module.h"
+#include "../wifi-config-module/src/wifi-config-module.h"
 
 HttpdBuiltInUrl* copyHttpdBuiltInUrls(const HttpdBuiltInUrl * source,
                           HttpdBuiltInUrl *target);
