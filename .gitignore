@@ -12,4 +12,5 @@ eagle.app.sym
 *.autosave
 *.creator.user
 *.swp
-test/html
+test-html
+html

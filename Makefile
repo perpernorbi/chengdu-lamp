@@ -87,7 +87,7 @@ EXTRA_LD_SCRIPTS:=
 #### no user configurable options below here
 ####
 SRC_DIR		:= $(addsuffix /src,$(MODULES))
-BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(addsuffix /src,$(MODULES)))
+BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(SRC_DIR))
 
 SDK_LIBDIR	:= $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
 SDK_INCDIR	:= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
@@ -179,7 +179,10 @@ $1/%.o: %.S
 	$(Q) $(CC) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CFLAGS)  -c $$< -o $$@
 endef
 
-.PHONY: all checkdirs clean libesphttpd default-tgt
+test-html:
+	MODULES="$(MODULES)" ./test-html.sh
+
+.PHONY: all checkdirs clean libesphttpd default-tgt test-html
 
 all: checkdirs $(TARGET_OUT) $(FW_BASE)
 
@@ -192,7 +195,7 @@ libesphttpd: libesphttpd/Makefile
 	rm -rf html/*
 	cp -r user/html/* html/
 	mkdir html/wifi
-	cp -r user/wifi-config-module/html/* html/wifi
+	cp -r user/wifi-config-module/html/wifi/* html/wifi
 	$(Q) make -C libesphttpd USE_OPENSDK=$(USE_OPENSDK)
 
 $(APP_AR): libesphttpd $(OBJ)
